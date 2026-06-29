@@ -17,7 +17,7 @@ st.title("🍔 Healthy Food Truck - Consumer Analytics Dashboard")
 # --- DATA LOADING (BULLETPROOF) ---
 @st.cache_data
 def load_data():
-    df = pd.read_csv("synthetic_student_survey.xlsx - Sheet1.csv")
+    df = pd.read_csv("synthetic_student_survey.xlsx - Sheet1.csv", encoding="latin-1")
     # Clean hidden spaces from column names completely
     df.columns = df.columns.str.strip() 
     df = df.dropna(how='all') 
