@@ -22,7 +22,7 @@ def load_data():
     df.columns = df.columns.str.strip() 
     df = df.dropna(how='all') 
     
-    # Dynamically find the target column name even if it has minor typos or hidden characters
+    # Dynamically find the target column name even if it has minor typos
     target_col = None
     for col in df.columns:
         if 'subscription' in col.lower():
@@ -42,7 +42,7 @@ except Exception as e:
     st.error(f"Error loading data. Error details: {e}")
     st.stop()
 
-# Ensure target column exists globally or throw descriptive fallback
+# Ensure target column exists globally
 if 'Subscription' not in df.columns:
     st.error(f"Could not find the target column 'Subscription' in your dataset. Available columns are: {list(df.columns)}")
     st.stop()
@@ -110,7 +110,7 @@ elif menu == "3. Supervised Machine Learning":
     st.markdown("Evaluating KNN, Decision Tree, Random Forest, and Gradient Boosting.")
     
     df_ml = df.dropna(subset=['Subscription']).copy()
-    y = df_ml['Subscription'].apply(lambda x: 1 if str(x).strip().lower() == 'yes' else 0)
+    y = df_ml['Subscription'].apply(lambda x: 1 if str(x).strip().lower() == 'yes' else 0).values
     
     cols_to_drop = ['Subscription', 'Combo_Items']
     cols_to_drop = [c for c in cols_to_drop if c in df_ml.columns]
@@ -127,6 +127,7 @@ elif menu == "3. Supervised Machine Learning":
     
     X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.3, random_state=42)
     
+    # Force strict 2D array scaling to prevent reshaping ValueError crashes
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
