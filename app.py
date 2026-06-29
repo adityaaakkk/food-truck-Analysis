@@ -16,8 +16,11 @@ st.title("🍔 Healthy Food Truck - Consumer Analytics Dashboard")
 
 # --- DATA LOADING (BULLETPROOF) ---
 @st.cache_data
+# --- DATA LOADING (BULLETPROOF) ---
+@st.cache_data
 def load_data():
-   df = pd.read_csv("synthetic_student_survey.xlsx - Sheet1.csv", sep=None, engine="python", encoding="latin-1", on_bad_lines="skip")    # Clean hidden spaces from column names completely
+    df = pd.read_csv("synthetic_student_survey.xlsx - Sheet1.csv", sep=None, engine="python", encoding="latin-1", on_bad_lines="skip")
+    # Clean hidden spaces from column names completely
     df.columns = df.columns.str.strip() 
     df = df.dropna(how='all') 
     
@@ -34,12 +37,6 @@ def load_data():
     if 'Diet_Restriction' in df.columns:
         df['Diet_Restriction'] = df['Diet_Restriction'].fillna('None') 
     return df
-
-try:
-    df = load_data()
-except Exception as e:
-    st.error(f"Error loading data. Error details: {e}")
-    st.stop()
 
 # Ensure target column exists globally
 if 'Subscription' not in df.columns:
