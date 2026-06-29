@@ -17,7 +17,7 @@ st.title("🍔 Healthy Food Truck - Consumer Analytics Dashboard")
 # --- DATA LOADING ---
 @st.cache_data
 def load_data():
-    df = pd.read_csv("synthetic_student_survey.xlsx - Sheet1.csv")
+    df = pd.read_csv("synthetic_student_survey.xlsx")
     df['Diet_Restriction'] = df['Diet_Restriction'].fillna('None') 
     return df
 
