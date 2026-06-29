@@ -16,8 +16,6 @@ st.title("🍔 Healthy Food Truck - Consumer Analytics Dashboard")
 
 # --- DATA LOADING (BULLETPROOF) ---
 @st.cache_data
-# --- DATA LOADING (BULLETPROOF) ---
-@st.cache_data
 def load_data():
     df = pd.read_csv("synthetic_student_survey.xlsx - Sheet1.csv", sep=None, engine="python", encoding="latin-1", on_bad_lines="skip")
     # Clean hidden spaces from column names completely
@@ -27,7 +25,7 @@ def load_data():
     # Dynamically find the target column name even if it has minor typos
     target_col = None
     for col in df.columns:
-        if 'subscription' in col.lower():
+        if 'subscription' in str(col).lower():
             target_col = col
             break
             
@@ -37,6 +35,13 @@ def load_data():
     if 'Diet_Restriction' in df.columns:
         df['Diet_Restriction'] = df['Diet_Restriction'].fillna('None') 
     return df
+
+# CRITICAL: This is the line that was accidentally deleted!
+try:
+    df = load_data()
+except Exception as e:
+    st.error(f"Error loading data. Error details: {e}")
+    st.stop()
 
 # Ensure target column exists globally
 if 'Subscription' not in df.columns:
@@ -123,7 +128,6 @@ elif menu == "3. Supervised Machine Learning":
     
     X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.3, random_state=42)
     
-    # Force strict 2D array scaling to prevent reshaping ValueError crashes
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
@@ -156,23 +160,3 @@ elif menu == "3. Supervised Machine Learning":
         cm_data[name] = confusion_matrix(y_test, y_pred)
         
     results_df = pd.DataFrame(results).T
-    st.dataframe(results_df.style.highlight_max(axis=0, color='lightgreen'))
-    
-    fig_metrics = px.bar(results_df, barmode='group', title="Model Performance Metrics Comparison")
-    st.plotly_chart(fig_metrics, use_container_width=True)
-    
-    st.subheader("ROC Curves (Model Stability Check)")
-    fig_roc = go.Figure()
-    fig_roc.add_shape(type='line', line=dict(dash='dash'), x0=0, x1=1, y0=0, y1=1)
-    
-    for name, (fpr, tpr, roc_auc) in roc_data.items():
-        fig_roc.add_trace(go.Scatter(x=fpr, y=tpr, mode='lines', name=f"{name} (AUC = {roc_auc:.2f})"))
-        
-    fig_roc.update_layout(xaxis_title='False Positive Rate', yaxis_title='True Positive Rate', title='Receiver Operating Characteristic (ROC)')
-    st.plotly_chart(fig_roc, use_container_width=True)
-    
-    st.subheader("Confusion Matrices")
-    cols = st.columns(2)
-    for idx, (name, cm) in enumerate(cm_data.items()):
-        fig_cm = px.imshow(cm, text_auto=True, color_continuous_scale='Blues', title=f"{name} Matrix", labels=dict(x="Predicted", y="Actual"))
-        cols[idx % 2].plotly_chart(fig_cm, use_container_width=True)
