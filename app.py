@@ -53,8 +53,8 @@ if 'Subscription' not in df.columns:
     st.info("Please ensure your dataset is a clean CSV with column headers on the very first row.")
     st.stop()
 
-# --- SIDEBAR: THE 7-CHAPTER STORY ---
-st.sidebar.title("🥗 The Aura Bowls Story")
+# --- SIDEBAR ---
+st.sidebar.title("🥗 Aura Bowls")
 menu = st.sidebar.radio(
     "Navigate Chapters:",
     ("📦 1. The Problem", 
