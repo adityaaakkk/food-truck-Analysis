@@ -17,11 +17,21 @@ st.title("🍔 Healthy Food Truck - Consumer Analytics Dashboard")
 # --- DATA LOADING (BULLETPROOF) ---
 @st.cache_data
 def load_data():
-    df = pd.read_csv("synthetic_student_survey.xlsx")
-    # Clean hidden spaces from column names
+    df = pd.read_csv("synthetic_student_survey.xlsx - Sheet1.csv")
+    # Clean hidden spaces from column names completely
     df.columns = df.columns.str.strip() 
-    # Drop completely empty Excel ghost rows
     df = df.dropna(how='all') 
+    
+    # Dynamically find the target column name even if it has minor typos or hidden characters
+    target_col = None
+    for col in df.columns:
+        if 'subscription' in col.lower():
+            target_col = col
+            break
+            
+    if target_col and target_col != 'Subscription':
+        df = df.rename(columns={target_col: 'Subscription'})
+        
     if 'Diet_Restriction' in df.columns:
         df['Diet_Restriction'] = df['Diet_Restriction'].fillna('None') 
     return df
@@ -29,7 +39,12 @@ def load_data():
 try:
     df = load_data()
 except Exception as e:
-    st.error(f"Error loading data. Please ensure the file is named exactly 'synthetic_student_survey.xlsx - Sheet1.csv'. Error: {e}")
+    st.error(f"Error loading data. Error details: {e}")
+    st.stop()
+
+# Ensure target column exists globally or throw descriptive fallback
+if 'Subscription' not in df.columns:
+    st.error(f"Could not find the target column 'Subscription' in your dataset. Available columns are: {list(df.columns)}")
     st.stop()
 
 # --- SIDEBAR NAVIGATION ---
@@ -50,7 +65,7 @@ if menu == "1. Descriptive Analytics":
     
     with col1:
         st.subheader("Campus vs. Subscription")
-        if 'Campus' in df.columns and 'Subscription' in df.columns:
+        if 'Campus' in df.columns:
             ct_campus = pd.crosstab(df['Campus'], df['Subscription'])
             st.dataframe(ct_campus, use_container_width=True)
             fig_campus = px.bar(ct_campus, barmode='group', color_discrete_sequence=['#EF553B', '#00CC96'])
@@ -58,7 +73,7 @@ if menu == "1. Descriptive Analytics":
 
     with col2:
         st.subheader("Living Arrangement vs. Subscription")
-        if 'Living_Arrangement' in df.columns and 'Subscription' in df.columns:
+        if 'Living_Arrangement' in df.columns:
             ct_living = pd.crosstab(df['Living_Arrangement'], df['Subscription'])
             st.dataframe(ct_living, use_container_width=True)
             fig_living = px.bar(ct_living, barmode='group', color_discrete_sequence=['#EF553B', '#00CC96'])
@@ -94,16 +109,13 @@ elif menu == "3. Supervised Machine Learning":
     st.header("3. Supervised Learning: Subscription Prediction")
     st.markdown("Evaluating KNN, Decision Tree, Random Forest, and Gradient Boosting.")
     
-    # Auto-clean data for ML to prevent NaN/Shape crashes
     df_ml = df.dropna(subset=['Subscription']).copy()
-    
     y = df_ml['Subscription'].apply(lambda x: 1 if str(x).strip().lower() == 'yes' else 0)
     
     cols_to_drop = ['Subscription', 'Combo_Items']
     cols_to_drop = [c for c in cols_to_drop if c in df_ml.columns]
     X = df_ml.drop(columns=cols_to_drop)
     
-    # Fill any remaining NaNs safely
     for col in X.columns:
         if X[col].dtype == 'object':
             X[col] = X[col].fillna('Unknown')
@@ -146,4 +158,24 @@ elif menu == "3. Supervised Machine Learning":
         roc_data[name] = (fpr, tpr, auc(fpr, tpr))
         cm_data[name] = confusion_matrix(y_test, y_pred)
         
-    results_
+    results_df = pd.DataFrame(results).T
+    st.dataframe(results_df.style.highlight_max(axis=0, color='lightgreen'))
+    
+    fig_metrics = px.bar(results_df, barmode='group', title="Model Performance Metrics Comparison")
+    st.plotly_chart(fig_metrics, use_container_width=True)
+    
+    st.subheader("ROC Curves (Model Stability Check)")
+    fig_roc = go.Figure()
+    fig_roc.add_shape(type='line', line=dict(dash='dash'), x0=0, x1=1, y0=0, y1=1)
+    
+    for name, (fpr, tpr, roc_auc) in roc_data.items():
+        fig_roc.add_trace(go.Scatter(x=fpr, y=tpr, mode='lines', name=f"{name} (AUC = {roc_auc:.2f})"))
+        
+    fig_roc.update_layout(xaxis_title='False Positive Rate', yaxis_title='True Positive Rate', title='Receiver Operating Characteristic (ROC)')
+    st.plotly_chart(fig_roc, use_container_width=True)
+    
+    st.subheader("Confusion Matrices")
+    cols = st.columns(2)
+    for idx, (name, cm) in enumerate(cm_data.items()):
+        fig_cm = px.imshow(cm, text_auto=True, color_continuous_scale='Blues', title=f"{name} Matrix", labels=dict(x="Predicted", y="Actual"))
+        cols[idx % 2].plotly_chart(fig_cm, use_container_width=True)
