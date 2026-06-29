@@ -11,7 +11,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 
 # --- PAGE CONFIGURATION ---
-st.set_page_config(page_title="Food Truck Analytics", page_icon="🍔", layout="wide")
+st.set_page_config(page_title="Aura Bowls Analytics", page_icon="🥗", layout="wide")
 
 # --- DATA LOADING (THE ULTIMATE AUTO-DETECTOR) ---
 @st.cache_data
@@ -47,7 +47,6 @@ def load_data():
 df = load_data()
 
 # --- GLOBAL SAFETY CHECK ---
-# If this triggers, your dataset is completely broken and nothing will run.
 if 'Subscription' not in df.columns:
     st.error("🚨 CRITICAL ERROR: The 'Subscription' column is missing from your dataset.")
     st.warning(f"These are the columns Python currently sees: {list(df.columns)}")
@@ -55,7 +54,7 @@ if 'Subscription' not in df.columns:
     st.stop()
 
 # --- SIDEBAR: THE 7-CHAPTER STORY ---
-st.sidebar.title("🍔 The Food Truck Story")
+st.sidebar.title("🥗 The Aura Bowls Story")
 menu = st.sidebar.radio(
     "Navigate Chapters:",
     ("📦 1. The Problem", 
@@ -74,7 +73,7 @@ if menu == "📦 1. The Problem":
     st.title("📦 The Problem: The Cost of Convenience")
     st.markdown("""
     **The Hypothesis:** Dubai students are trapped between high academic stress and a lack of healthy, affordable food. 
-    We believe a mobile, macro-tracked food truck can capture this market. Let's look at the baseline behavior driving this assumption.
+    We believe a mobile, macro-tracked food truck like **Aura Bowls** can capture this market. Let's look at the baseline behavior driving this assumption.
     """)
     
     try:
@@ -92,7 +91,7 @@ if menu == "📦 1. The Problem":
 # ==========================================
 elif menu == "🧾 2. Meet the Data":
     st.title("🧾 Meet the Data: The Student Persona")
-    st.markdown("We deployed a 25-metric survey to capture psychographics, financials, and dietary habits. Who exactly are we feeding?")
+    st.markdown("We deployed a 25-metric survey to capture psychographics, financials, and dietary habits. Who exactly is **Aura Bowls** feeding?")
     
     col1, col2 = st.columns(2)
     try:
@@ -102,7 +101,7 @@ elif menu == "🧾 2. Meet the Data":
         with col2:
             fig_track = px.pie(df, names='App_Tracker', hole=0.4, title="Calorie Tracking Adoption", color_discrete_sequence=px.colors.qualitative.Set2)
             st.plotly_chart(fig_track, use_container_width=True)
-        st.success("**What We Achieved:** We successfully profiled the market intent. The majority are actively pursuing 'Muscle Gain' or 'Fat Loss' and heavily utilize tracking apps. This justifies our USP of barcode-integrated, macro-friendly meals.")
+        st.success("**What We Achieved:** We successfully profiled the market intent. The majority are actively pursuing 'Muscle Gain' or 'Fat Loss' and heavily utilize tracking apps. This justifies Aura Bowls' USP of barcode-integrated, macro-friendly meals.")
     except Exception as e:
         st.error(f"Cannot render graphs. Missing columns (Fitness_Goal, App_Tracker). Error: {e}")
 
@@ -111,10 +110,9 @@ elif menu == "🧾 2. Meet the Data":
 # ==========================================
 elif menu == "🧹 3. Cleaning":
     st.title("🧹 Data Cleaning: Taming the Messy Export")
-    st.markdown("Raw data is never ML-ready. We systematically eradicated formatting errors, missing dietary tags, and Excel ghost rows to guarantee pipeline stability.")
+    st.markdown("Raw data is never ML-ready. We systematically eradicated formatting errors, missing dietary tags, and Excel ghost rows to guarantee pipeline stability for the Aura Bowls engine.")
     
     try:
-        # Dynamic calculation based on current dataframe
         raw_rows = len(df) + 18
         ghost_fixed = len(df)
         ml_ready = len(df.dropna(subset=['Subscription']))
@@ -148,7 +146,7 @@ elif menu == "📊 4. What Happened":
             ct_living = pd.crosstab(df['Living_Arrangement'], df['Subscription'])
             fig_living = px.bar(ct_living, barmode='group', title="Living Arrangement vs. Subscription", color_discrete_sequence=['#EF553B', '#00CC96'])
             st.plotly_chart(fig_living, use_container_width=True)
-        st.success("**What We Achieved:** We located our prime operational zones. Students in 'Shared Apartments' and 'Dorms' heavily favor subscriptions. We now know exactly where to park the truck.")
+        st.success("**What We Achieved:** We located our prime operational zones. Students in 'Shared Apartments' and 'Dorms' heavily favor subscriptions. We now know exactly where to park the Aura Bowls truck.")
     except Exception as e:
         st.error(f"Cannot render demographic graphs. Missing columns. Error: {e}")
 
@@ -169,7 +167,7 @@ elif menu == "🔍 5. The Real Reasons":
             fig_wait = px.histogram(df, x="Wait_Time", color="Subscription", barmode="group",
                                 title="Patience Limit (Wait Time Tolerance)", color_discrete_sequence=['#EF553B', '#00CC96'])
             st.plotly_chart(fig_wait, use_container_width=True)
-        st.success("**What We Achieved:** We diagnosed the invisible bottlenecks. Financially, anyone with a food budget under ~800 AED is excluded. Operationally, patience drops after 10 minutes. Speed and pricing are critical success factors.")
+        st.success("**What We Achieved:** We diagnosed the invisible bottlenecks. Financially, anyone with a food budget under ~800 AED is excluded. Operationally, patience drops after 10 minutes. Speed and pricing are critical success factors for Aura Bowls.")
     except Exception as e:
         st.error(f"Cannot render bias graphs. Missing columns. Error: {e}")
 
@@ -178,10 +176,9 @@ elif menu == "🔍 5. The Real Reasons":
 # ==========================================
 elif menu == "🎯 6. The Subscription Engine":
     st.title("🎯 The Subscription Engine: Predictive ML")
-    st.markdown("We trained four classification algorithms to predict *exactly* who will subscribe based on all 24 survey features.")
+    st.markdown("We trained four classification algorithms to predict *exactly* who will subscribe to **Aura Bowls** based on all 24 survey features.")
     
     try:
-        # ML Processing
         df_ml = df.dropna(subset=['Subscription']).copy()
         y = df_ml['Subscription'].apply(lambda x: 1 if str(x).strip().lower() == 'yes' else 0).values
         
@@ -248,7 +245,7 @@ elif menu == "🎯 6. The Subscription Engine":
                            title="Random Forest Confusion Matrix", labels=dict(x="Predicted", y="Actual"))
         st.plotly_chart(fig_cm, use_container_width=True)
 
-        st.success("**What We Achieved:** We built a production-ready targeting engine. Random Forest and Gradient Boosting completely mapped the consumer DNA, achieving near-perfect predictive accuracy.")
+        st.success("**What We Achieved:** We built a production-ready targeting engine. Random Forest and Gradient Boosting completely mapped the consumer DNA, achieving near-perfect predictive accuracy for the Aura Bowls brand.")
     except Exception as e:
         st.error(f"Machine Learning pipeline failed to execute. Error: {e}")
 
@@ -256,8 +253,8 @@ elif menu == "🎯 6. The Subscription Engine":
 # CHAPTER 7: THE VERDICT
 # ==========================================
 elif menu == "⚖️ 7. The Verdict":
-    st.title("⚖️ The Verdict: The Strategy")
-    st.markdown("To guarantee profitability, we must align our pricing with the exact thresholds our survey uncovered.")
+    st.title("⚖️ The Verdict: The Aura Bowls Strategy")
+    st.markdown("To guarantee profitability for **Aura Bowls**, we must align our pricing with the exact thresholds our survey uncovered.")
     
     try:
         fig_price = go.Figure()
@@ -270,7 +267,7 @@ elif menu == "⚖️ 7. The Verdict":
             
         st.success("""
         **Final Verdict & Business Roadmap:**
-        * **Pricing Sweet Spot:** The graph above proves we must anchor our combo meals between the green peak and the red drop-off. Pricing above 50 AED will trigger massive churn. 
+        * **Pricing Sweet Spot:** The graph above proves we must anchor our bowls between the green peak and the red drop-off. Pricing above 50 AED will trigger massive churn. 
         * **Location:** Daily routes must prioritize DIAC and Knowledge Park dorm clusters.
         * **Operations:** Service Level Agreements (SLAs) must be under 10 minutes per order. 
         * **Marketing:** Gamified loyalty programs tied to Apple/Google Pay will capture the tech-savvy, macro-tracking demographic.
